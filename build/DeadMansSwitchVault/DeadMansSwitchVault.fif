@@ -1,0 +1,975 @@
+"Asm.fif" include
+// automatically generated from DeadMansSwitchVault.tolk
+PROGRAM{
+  DECLPROC VaultState.requirePhaseOneLayout()
+  DECLPROC VaultState.isBeneficiary()
+  DECLPROC VaultState.payoutPoolTotal()
+  DECLPROC VaultState.beneficiaryPayoutAmount()
+  DECLPROC payoutRemainingIfPossible()
+  0 DECLMETHOD onInternalMessage()
+  80293 DECLMETHOD get_owner()
+  82320 DECLMETHOD get_version()
+  66342 DECLMETHOD get_liveness_status()
+  84414 DECLMETHOD get_payout_progress()
+  106227 DECLMETHOD get_beneficiary()
+  // contracts/DeadMansSwitchVault.tolk:115
+  VaultState.requirePhaseOneLayout() PROC:<{	//  self.owner self.liveness_interval_seconds self.last_liveness_at self.liveness_code_hash self.beneficiary_count self.beneficiaries self.payout_index self.payout_pool_snapshot self.expired self.completed self.minimum_reserve_floor self.version
+    // 106: var count: uint16 = 0
+    5 BLKDROP               	//  self.owner self.liveness_interval_seconds self.last_liveness_at self.liveness_code_hash self.beneficiary_count self.beneficiaries self.payout_index
+    3 3 BLKDROP2            	//  self.owner self.beneficiary_count self.beneficiaries self.payout_index
+    s3 POP                  	//  self.payout_index self.beneficiary_count self.beneficiaries
+    0 PUSHINT               	//  self.payout_index self.beneficiary_count self.beneficiaries count=0
+    // 107: var cursor = self.beneficiaries.findFirst()
+    OVER
+    16 PUSHINT              	//  self.payout_index self.beneficiary_count self.beneficiaries count=0 self.beneficiaries '20=16
+    DICTUMIN NULLSWAPIFNOT2 	//  self.payout_index self.beneficiary_count self.beneficiaries count=0 '15 '16 '17
+    s2 POP                  	//  self.payout_index self.beneficiary_count self.beneficiaries count=0 cursor.isFound cursor.key
+    // 108: while (cursor.isFound)
+    WHILE:<{                	//  self.payout_index self.beneficiary_count self.beneficiaries count cursor.isFound cursor.key
+      SWAP                  	//  self.payout_index self.beneficiary_count self.beneficiaries count cursor.key cursor.isFound
+    }>DO<{                  	//  self.payout_index self.beneficiary_count self.beneficiaries count cursor.key
+      // 109: count += 1
+      SWAP                  	//  self.payout_index self.beneficiary_count self.beneficiaries cursor.key count
+      INC                   	//  self.payout_index self.beneficiary_count self.beneficiaries cursor.key count
+      // 110: cursor = self.beneficiaries.iterateNext(cursor)
+      s1 s2 XCPU
+      16 PUSHINT            	//  self.payout_index self.beneficiary_count self.beneficiaries count cursor.key self.beneficiaries '31=16
+      DICTUGETNEXT NULLSWAPIFNOT2	//  self.payout_index self.beneficiary_count self.beneficiaries count '26 '27 '28
+      s2 POP                	//  self.payout_index self.beneficiary_count self.beneficiaries count cursor.isFound cursor.key
+    }>                      	//  self.payout_index self.beneficiary_count self.beneficiaries count cursor.key
+    // 112: return count
+    DROP                    	//  self.payout_index self.beneficiary_count self.beneficiaries actualCount
+    // 117: assert (actualCount == self.beneficiary_count) throw ERR_BENEFICIARY_COUNT_MISMATCH
+    s2 PUSH                 	//  self.payout_index self.beneficiary_count self.beneficiaries actualCount self.beneficiary_count
+    EQUAL                   	//  self.payout_index self.beneficiary_count self.beneficiaries '34
+    101 THROWIFNOT          	//  self.payout_index self.beneficiary_count self.beneficiaries
+    // 119: var cursor = self.beneficiaries.findFirst()
+    DUP
+    16 PUSHINT              	//  self.payout_index self.beneficiary_count self.beneficiaries self.beneficiaries '40=16
+    DICTUMIN NULLSWAPIFNOT2 	//  self.payout_index self.beneficiary_count self.beneficiaries cursor.rawValue cursor.key cursor.isFound
+    // 120: var totalShareBasisPoints: uint16 = 0
+    0 PUSHINT               	//  self.payout_index self.beneficiary_count self.beneficiaries cursor.rawValue cursor.key cursor.isFound totalShareBasisPoints=0
+    // 121: while (cursor.isFound)
+    WHILE:<{                	//  self.payout_index self.beneficiary_count self.beneficiaries cursor.rawValue cursor.key cursor.isFound totalShareBasisPoints
+      SWAP                  	//  self.payout_index self.beneficiary_count self.beneficiaries cursor.rawValue cursor.key totalShareBasisPoints cursor.isFound
+    }>DO<{                  	//  self.payout_index self.beneficiary_count self.beneficiaries s cursor.key totalShareBasisPoints
+      // 1054: return V.fromSlice(self.rawValue!
+      s0 s2 XCHG            	//  self.payout_index self.beneficiary_count self.beneficiaries totalShareBasisPoints cursor.key s
+      LDREF                 	//  self.payout_index self.beneficiary_count self.beneficiaries totalShareBasisPoints cursor.key '50 s
+      ENDS                  	//  self.payout_index self.beneficiary_count self.beneficiaries totalShareBasisPoints cursor.key '46
+      // 102: return BeneficiaryEntry.fromCell(data)
+      CTOS                  	//  self.payout_index self.beneficiary_count self.beneficiaries totalShareBasisPoints cursor.key s
+      LDSTDADDR             	//  self.payout_index self.beneficiary_count self.beneficiaries totalShareBasisPoints cursor.key '58 s
+      NIP                   	//  self.payout_index self.beneficiary_count self.beneficiaries totalShareBasisPoints cursor.key s
+      16 LDU                	//  self.payout_index self.beneficiary_count self.beneficiaries totalShareBasisPoints cursor.key '60 s
+      LDGRAMS               	//  self.payout_index self.beneficiary_count self.beneficiaries totalShareBasisPoints cursor.key '60 '61 s
+      LDGRAMS               	//  self.payout_index self.beneficiary_count self.beneficiaries totalShareBasisPoints cursor.key '60 '61 '62 s
+      ENDS                  	//  self.payout_index self.beneficiary_count self.beneficiaries totalShareBasisPoints cursor.key beneficiary.share_basis_points beneficiary.usdt_amount_stub beneficiary.xaut0_amount_stub
+      // 123: totalShareBasisPoints += beneficiary.share_basis_points
+      s4 s2 XCHG2           	//  self.payout_index self.beneficiary_count self.beneficiaries beneficiary.usdt_amount_stub cursor.key beneficiary.xaut0_amount_stub totalShareBasisPoints beneficiary.share_basis_points
+      ADD                   	//  self.payout_index self.beneficiary_count self.beneficiaries beneficiary.usdt_amount_stub cursor.key beneficiary.xaut0_amount_stub totalShareBasisPoints
+      // 124: assert (beneficiary.usdt_amount_stub == 0) throw ERR_NONZERO_USDT_STUB
+      s0 s3 XCHG            	//  self.payout_index self.beneficiary_count self.beneficiaries totalShareBasisPoints cursor.key beneficiary.xaut0_amount_stub beneficiary.usdt_amount_stub
+      102 THROWIF           	//  self.payout_index self.beneficiary_count self.beneficiaries totalShareBasisPoints cursor.key beneficiary.xaut0_amount_stub
+      // 125: assert (beneficiary.xaut0_amount_stub == 0) throw ERR_NONZERO_XAUT0_STUB
+      103 THROWIF           	//  self.payout_index self.beneficiary_count self.beneficiaries totalShareBasisPoints cursor.key
+      // 126: cursor = self.beneficiaries.iterateNext(cursor)
+      s2 PUSH
+      16 PUSHINT            	//  self.payout_index self.beneficiary_count self.beneficiaries totalShareBasisPoints cursor.key self.beneficiaries '79=16
+      DICTUGETNEXT NULLSWAPIFNOT2	//  self.payout_index self.beneficiary_count self.beneficiaries totalShareBasisPoints cursor.rawValue cursor.key cursor.isFound
+      // 121: while (cursor.isFound)
+      3 ROLL                	//  self.payout_index self.beneficiary_count self.beneficiaries cursor.rawValue cursor.key cursor.isFound totalShareBasisPoints
+    }>                      	//  self.payout_index self.beneficiary_count self.beneficiaries cursor.rawValue cursor.key totalShareBasisPoints
+    // 128: assert (totalShareBasisPoints == FULL_SHARE_BASIS_POINTS) throw ERR_INVALID_SHARE_TOTAL
+    3 1 BLKDROP2            	//  self.payout_index self.beneficiary_count totalShareBasisPoints
+    10000 PUSHINT           	//  self.payout_index self.beneficiary_count totalShareBasisPoints '81=10000
+    EQUAL                   	//  self.payout_index self.beneficiary_count '82
+    114 THROWIFNOT          	//  self.payout_index self.beneficiary_count
+    // 130: assert (self.beneficiary_count == 0 || self.payout_index <= self.beneficiary_count) throw ERR_PAYOUT_INDEX_OUT_OF_RANGE
+    DUP                     	//  self.payout_index self.beneficiary_count self.beneficiary_count
+    0 EQINT                 	//  self.payout_index self.beneficiary_count '85
+    IF:<{                   	//  self.payout_index self.beneficiary_count
+      2DROP                 	// 
+      -1 PUSHINT            	//  '86=-1
+    }>ELSE<{                	//  self.payout_index self.beneficiary_count
+      LEQ                   	//  '88
+      0 NEQINT              	//  '86
+    }>                      	//  '86
+    104 THROWIFNOT          	// 
+  }>
+  // contracts/DeadMansSwitchVault.tolk:147
+  VaultState.isBeneficiary() PROC:<{	//  self.owner self.liveness_interval_seconds self.last_liveness_at self.liveness_code_hash self.beneficiary_count self.beneficiaries self.payout_index self.payout_pool_snapshot self.expired self.completed self.minimum_reserve_floor self.version who
+    // 147: fun VaultState.isBeneficiary(self, who: address): bool
+    c2 SAVE
+    SAMEALTSAVE
+    // 148: var cursor = self.beneficiaries.findFirst()
+    s8 POP
+    6 BLKDROP               	//  self.owner self.liveness_interval_seconds self.last_liveness_at self.liveness_code_hash who self.beneficiaries
+    4 2 BLKDROP2            	//  who self.beneficiaries
+    DUP
+    16 PUSHINT              	//  who self.beneficiaries self.beneficiaries '18=16
+    DICTUMIN NULLSWAPIFNOT2 	//  who self.beneficiaries cursor.rawValue cursor.key cursor.isFound
+    // 149: while (cursor.isFound)
+    WHILE:<{                	//  who self.beneficiaries cursor.rawValue cursor.key cursor.isFound
+    }>DO<{                  	//  who self.beneficiaries s cursor.key
+      // 1054: return V.fromSlice(self.rawValue!
+      SWAP                  	//  who self.beneficiaries cursor.key s
+      LDREF                 	//  who self.beneficiaries cursor.key '26 s
+      ENDS                  	//  who self.beneficiaries cursor.key '22
+      // 102: return BeneficiaryEntry.fromCell(data)
+      CTOS                  	//  who self.beneficiaries cursor.key s
+      LDSTDADDR             	//  who self.beneficiaries cursor.key '34 s
+      16 LDU                	//  who self.beneficiaries cursor.key '34 '36 s
+      NIP                   	//  who self.beneficiaries cursor.key '34 s
+      LDGRAMS               	//  who self.beneficiaries cursor.key '34 '37 s
+      NIP                   	//  who self.beneficiaries cursor.key '34 s
+      LDGRAMS               	//  who self.beneficiaries cursor.key '34 '38 s
+      NIP                   	//  who self.beneficiaries cursor.key '34 s
+      ENDS                  	//  who self.beneficiaries cursor.key beneficiary.wallet
+      // 151: if (beneficiary.wallet == who)
+      s3 PUSH               	//  who self.beneficiaries cursor.key beneficiary.wallet who
+      SDEQ                  	//  who self.beneficiaries cursor.key '43
+      IFJMP:<{              	//  who self.beneficiaries cursor.key
+        // 152: return true
+        3 BLKDROP           	// 
+        TRUE                	//  '44
+        RETALT
+      }>                    	//  who self.beneficiaries cursor.key
+      // 154: cursor = self.beneficiaries.iterateNext(cursor)
+      OVER
+      16 PUSHINT            	//  who self.beneficiaries cursor.key self.beneficiaries '50=16
+      DICTUGETNEXT NULLSWAPIFNOT2	//  who self.beneficiaries cursor.rawValue cursor.key cursor.isFound
+    }>                      	//  who self.beneficiaries cursor.rawValue cursor.key
+    // 156: return false
+    4 BLKDROP               	// 
+    FALSE                   	//  '51
+  }>
+  // contracts/DeadMansSwitchVault.tolk:168
+  VaultState.payoutPoolTotal() PROC:<{	//  self.owner self.liveness_interval_seconds self.last_liveness_at self.liveness_code_hash self.beneficiary_count self.beneficiaries self.payout_index self.payout_pool_snapshot self.expired self.completed self.minimum_reserve_floor self.version
+    // 169: if (self.payout_pool_snapshot > 0)
+    s4 s11 XCHG
+    11 BLKDROP              	//  self.payout_pool_snapshot
+    DUP                     	//  self.payout_pool_snapshot self.payout_pool_snapshot
+    0 GTINT                 	//  self.payout_pool_snapshot '13
+    IFJMP:<{                	//  self.payout_pool_snapshot
+    }>                      	//  self.payout_pool_snapshot
+    // 173: if (contract.getOriginalBalance() > EXECUTED_PROOF_RESERVE + PAYOUT_FEE_BUFFER)
+    DROP                    	// 
+    BALANCE
+    FIRST                   	//  '14
+    100000000 PUSHINT       	//  '14 '17
+    GREATER                 	//  '18
+    IFJMP:<{                	// 
+      // 174: return contract.getOriginalBalance() - EXECUTED_PROOF_RESERVE - PAYOUT_FEE_BUFFER
+      BALANCE
+      FIRST                 	//  '19
+      50000000 PUSHINT      	//  '19 '20=50000000
+      SUB                   	//  '21
+      50000000 PUSHINT      	//  '21 '22=50000000
+      SUB                   	//  '23
+    }>                      	// 
+    // 177: return 0
+    0 PUSHINT               	//  '24=0
+  }>
+  // contracts/DeadMansSwitchVault.tolk:180
+  VaultState.beneficiaryPayoutAmount() PROC:<{	//  self.owner self.liveness_interval_seconds self.last_liveness_at self.liveness_code_hash self.beneficiary_count self.beneficiaries self.payout_index self.payout_pool_snapshot self.expired self.completed self.minimum_reserve_floor self.version index
+    // 181: val payoutPool = self.payoutPoolTotal()
+    s8 PUSH
+    s10 s13 XCHG
+    s9 s12 XCHG
+    s8 s11 XCHG
+    s7 s13 XCHG             	//  self.payout_index self.beneficiary_count self.beneficiaries self.owner self.liveness_interval_seconds self.last_liveness_at self.liveness_code_hash self.payout_pool_snapshot self.expired self.completed self.minimum_reserve_floor self.version index self.beneficiary_count
+    s6 s11 XCPU             	//  self.payout_index self.beneficiary_count self.beneficiaries self.owner self.liveness_interval_seconds self.last_liveness_at self.liveness_code_hash self.beneficiary_count self.expired self.completed self.minimum_reserve_floor self.version index self.payout_pool_snapshot self.beneficiaries
+    s0 s6 XCHG              	//  self.payout_index self.beneficiary_count self.beneficiaries self.owner self.liveness_interval_seconds self.last_liveness_at self.liveness_code_hash self.beneficiary_count self.beneficiaries self.completed self.minimum_reserve_floor self.version index self.payout_pool_snapshot self.expired
+    s5 s14 XCHG             	//  self.completed self.beneficiary_count self.beneficiaries self.owner self.liveness_interval_seconds self.last_liveness_at self.liveness_code_hash self.beneficiary_count self.beneficiaries self.payout_index self.minimum_reserve_floor self.version index self.payout_pool_snapshot self.expired
+    s14 s4 s3 XCHG3         	//  index self.beneficiary_count self.beneficiaries self.owner self.liveness_interval_seconds self.last_liveness_at self.liveness_code_hash self.beneficiary_count self.beneficiaries self.payout_index self.payout_pool_snapshot self.expired self.completed self.minimum_reserve_floor self.version
+    VaultState.payoutPoolTotal() CALLDICT	//  index self.beneficiary_count self.beneficiaries payoutPool
+    // 182: val beneficiary = loadBeneficiaryEntry(self.beneficiaries.mustGet(index))
+    s3 s1 PUSH2
+    16 PUSHINT              	//  index self.beneficiary_count self.beneficiaries payoutPool index self.beneficiaries '20=16
+    DICTUGETREF
+    9 THROWIFNOT            	//  index self.beneficiary_count self.beneficiaries payoutPool '16
+    // 102: return BeneficiaryEntry.fromCell(data)
+    CTOS                    	//  index self.beneficiary_count self.beneficiaries payoutPool s
+    LDSTDADDR               	//  index self.beneficiary_count self.beneficiaries payoutPool '28 s
+    NIP                     	//  index self.beneficiary_count self.beneficiaries payoutPool s
+    16 LDU                  	//  index self.beneficiary_count self.beneficiaries payoutPool '30 s
+    LDGRAMS                 	//  index self.beneficiary_count self.beneficiaries payoutPool '30 '31 s
+    NIP                     	//  index self.beneficiary_count self.beneficiaries payoutPool '30 s
+    LDGRAMS                 	//  index self.beneficiary_count self.beneficiaries payoutPool '30 '32 s
+    NIP                     	//  index self.beneficiary_count self.beneficiaries payoutPool '30 s
+    ENDS                    	//  index self.beneficiary_count self.beneficiaries payoutPool beneficiary.share_basis_points
+    // 184: if (index == 0)
+    s0 s4 XCHG              	//  beneficiary.share_basis_points self.beneficiary_count self.beneficiaries payoutPool index
+    0 EQINT                 	//  beneficiary.share_basis_points self.beneficiary_count self.beneficiaries payoutPool '38
+    IFJMP:<{                	//  beneficiary.share_basis_points self.beneficiary_count self.beneficiaries payoutPool
+      // 185: var remainder = payoutPool
+      s3 POP                	//  payoutPool self.beneficiary_count self.beneficiaries
+      s2 PUSH               	//  payoutPool self.beneficiary_count self.beneficiaries remainder
+      // 186: var cursorIndex: uint16 = 1
+      1 PUSHINT             	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex=1
+      // 188: while (cursorIndex < self.beneficiary_count)
+      WHILE:<{              	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex
+        s0 s3 PUSH2         	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex cursorIndex self.beneficiary_count
+        LESS                	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex '42
+      }>DO<{                	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex
+        // 189: val laterBeneficiary = loadBeneficiaryEntry(self.beneficiaries.mustGet(cursorIndex))
+        s0 s2 PUSH2
+        16 PUSHINT          	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex cursorIndex self.beneficiaries '48=16
+        DICTUGETREF
+        9 THROWIFNOT        	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex '44
+        // 102: return BeneficiaryEntry.fromCell(data)
+        CTOS                	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex s
+        LDSTDADDR           	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex '56 s
+        NIP                 	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex s
+        16 LDU              	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex '58 s
+        LDGRAMS             	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex '58 '59 s
+        NIP                 	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex '58 s
+        LDGRAMS             	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex '58 '60 s
+        NIP                 	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex '58 s
+        ENDS                	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex laterBeneficiary.share_basis_points
+        // 190: remainder -= payoutPool * laterBeneficiary.share_basis_points / FULL_SHARE_BASIS_POINTS
+        s5 PUSH             	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex laterBeneficiary.share_basis_points payoutPool
+        MUL                 	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex '65
+        10000 PUSHINT       	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex '65 '66=10000
+        DIV                 	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex '67
+        s1 s2 XCHG          	//  payoutPool self.beneficiary_count self.beneficiaries cursorIndex remainder '67
+        SUB                 	//  payoutPool self.beneficiary_count self.beneficiaries cursorIndex remainder
+        // 191: cursorIndex += 1
+        SWAP                	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex
+        INC                 	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex
+      }>                    	//  payoutPool self.beneficiary_count self.beneficiaries remainder cursorIndex
+      // 194: return remainder
+      s1 s4 XCHG
+      4 BLKDROP             	//  remainder
+    }>                      	//  beneficiary.share_basis_points self.beneficiary_count self.beneficiaries payoutPool
+    // 197: return payoutPool * beneficiary.share_basis_points / FULL_SHARE_BASIS_POINTS
+    2 1 BLKDROP2            	//  beneficiary.share_basis_points payoutPool
+    MUL                     	//  '71
+    10000 PUSHINT           	//  '71 '72=10000
+    DIV                     	//  '73
+  }>
+  // contracts/DeadMansSwitchVault.tolk:200
+  payoutRemainingIfPossible() PROC:<{	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    // 201: if (state.payout_pool_snapshot == 0)
+    s4 PUSH                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version state.payout_pool_snapshot
+    0 EQINT                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version '13
+    IF:<{                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+      // 202: state.payout_pool_snapshot = state.payoutPoolTotal()
+      s11 s10 s(-2) PU2XC   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.version
+      s11 s10 s(-2) PU2XC   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.version
+      s11 s10 s(-2) PU2XC   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.version
+      s11 s10 s9 PUXCPU     	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.version state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired
+      s10 s9 s12 PUSH3      	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.version state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+      VaultState.payoutPoolTotal() CALLDICT	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.version state.expired state.completed state.minimum_reserve_floor state.payout_pool_snapshot
+      // 201: if (state.payout_pool_snapshot == 0)
+      s0 s4 XCHG            	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    }>                      	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    // 205: reserveToncoinsOnBalance(EXECUTED_PROOF_RESERVE, RESERVE_MODE_AT_MOST)
+    50000000 PUSHINT        	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version '15=50000000
+    2 PUSHINT               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version '15=50000000 '16=2
+    RAWRESERVE              	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    // 207: var availableToDistribute: coins = 0
+    0 PUSHINT               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute=0
+    // 208: if (contract.getOriginalBalance() > EXECUTED_PROOF_RESERVE + PAYOUT_FEE_BUFFER)
+    BALANCE
+    FIRST                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute=0 '19
+    100000000 PUSHINT       	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute=0 '19 '22
+    GREATER                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute=0 '23
+    IF:<{                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute=0
+      // 209: availableToDistribute = contract.getOriginalBalance() - EXECUTED_PROOF_RESERVE - PAYOUT_FEE_BUFFER
+      DROP                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+      BALANCE
+      FIRST                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version '24
+      50000000 PUSHINT      	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version '24 '25=50000000
+      SUB                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version '26
+      50000000 PUSHINT      	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version '26 '27=50000000
+      SUB                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute
+    }>                      	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute
+    // 212: var shouldContinue = state.payout_index < state.beneficiary_count
+    s6 s8 PUSH2             	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute state.payout_index state.beneficiary_count
+    LESS                    	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute shouldContinue
+    // 213: while (shouldContinue)
+    WHILE:<{                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute shouldContinue
+    }>DO<{                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute
+      // 214: val beneficiary = loadBeneficiaryEntry(state.beneficiaries.mustGet(state.payout_index))
+      s6 s7 PUSH2
+      16 PUSHINT            	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute state.payout_index state.beneficiaries '36=16
+      DICTUGETREF
+      9 THROWIFNOT          	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute '32
+      // 102: return BeneficiaryEntry.fromCell(data)
+      CTOS                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute s
+      LDSTDADDR             	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute '44 s
+      16 LDU                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute '44 '46 s
+      NIP                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute '44 s
+      LDGRAMS               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute '44 '47 s
+      NIP                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute '44 s
+      LDGRAMS               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute '44 '48 s
+      NIP                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute '44 s
+      ENDS                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute beneficiary.wallet
+      // 215: val payoutAmount = state.beneficiaryPayoutAmount(state.payout_index)
+      s13 s12 s11 PUSH3     	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute beneficiary.wallet state.owner state.liveness_interval_seconds state.last_liveness_at
+      s13 s12 s11 PUSH3     	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute beneficiary.wallet state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries
+      s13 s12 s11 PUSH3     	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute beneficiary.wallet state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired
+      s13 s12 s11 PUSH3     	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute beneficiary.wallet state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+      19 s() PUSH           	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute beneficiary.wallet state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version state.payout_index
+      VaultState.beneficiaryPayoutAmount() CALLDICT	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute beneficiary.wallet payoutAmount
+      // 217: if (payoutAmount > availableToDistribute)
+      s0 s2 PUSH2           	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute beneficiary.wallet payoutAmount payoutAmount availableToDistribute
+      GREATER               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute beneficiary.wallet payoutAmount '55
+      IF:<{                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute beneficiary.wallet payoutAmount
+        // 218: shouldContinue = false
+        2DROP               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute
+        FALSE               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute shouldContinue
+      }>ELSE<{              	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute beneficiary.wallet payoutAmount
+        // 220: createMessage(
+        NEWC                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute beneficiary.wallet payoutAmount b
+        b{010000} STSLICECONST	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute beneficiary.wallet payoutAmount b
+        s1 s2 XCHG          	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute payoutAmount beneficiary.wallet b
+        STSTDADDR           	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute payoutAmount b
+        OVER                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute payoutAmount b payoutAmount
+        STGRAMS             	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute payoutAmount b
+        0 PUSHINT
+        107 STUR            	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute payoutAmount b
+        ENDC                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute payoutAmount '131
+        // 224: ).send(SEND_MODE_PAY_FEES_SEPARATELY)
+        1 PUSHINT           	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute payoutAmount '131 '132=1
+        // 220: createMessage(
+        SENDRAWMSG          	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute payoutAmount
+        // 226: availableToDistribute -= payoutAmount
+        SUB                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute
+        // 227: state.payout_index += 1
+        s0 s6 XCHG          	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries availableToDistribute state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version state.payout_index
+        INC                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries availableToDistribute state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version state.payout_index
+        // 228: shouldContinue = state.payout_index < state.beneficiary_count
+        s0 s8 PUSH2         	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries availableToDistribute state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version state.payout_index state.payout_index state.beneficiary_count
+        LESS                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries availableToDistribute state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version state.payout_index shouldContinue
+        // 217: if (payoutAmount > availableToDistribute)
+        s1 s7 XCHG          	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute shouldContinue
+      }>                    	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute shouldContinue
+    }>                      	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version availableToDistribute
+    // 232: if (state.payout_index == state.beneficiary_count)
+    DROP                    	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    s5 s7 PUSH2             	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version state.payout_index state.beneficiary_count
+    EQUAL                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version '137
+    IFJMP:<{                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+      // 233: state.completed = true
+      s2 POP                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor
+      TRUE                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed
+      // 165: return loadBeneficiaryEntry(self.beneficiaries.mustGet(0))
+      0 PUSHINT             	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed '143=0
+      s7 PUSH
+      16 PUSHINT            	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed '143=0 state.beneficiaries '149=16
+      DICTUGETREF
+      9 THROWIFNOT          	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed '145
+      // 102: return BeneficiaryEntry.fromCell(data)
+      CTOS                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed s
+      LDSTDADDR             	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed '157 s
+      16 LDU                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed '157 '159 s
+      NIP                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed '157 s
+      LDGRAMS               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed '157 '160 s
+      NIP                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed '157 s
+      LDGRAMS               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed '157 '161 s
+      NIP                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed '157 s
+      ENDS                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet
+      // 98: contract.setData(self.toCell())
+      s12 PUSH
+      NEWC                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet state.owner b
+      STSTDADDR             	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b
+      s12 PUSH              	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b state.liveness_interval_seconds
+      32 STUR               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b
+      s11 PUSH              	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b state.last_liveness_at
+      64 STUR               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b
+      s10 PUSH              	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b state.liveness_code_hash
+      256 STUR              	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b
+      s9 PUSH               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b state.beneficiary_count
+      16 STUR               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b
+      s8 s(-1) PUXC         	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet state.beneficiaries b
+      STOPTREF              	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b
+      s7 PUSH               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b state.payout_index
+      16 STUR               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b
+      s6 PUSH               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b state.payout_pool_snapshot
+      STGRAMS               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b
+      s5 PUSH               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b state.expired
+      1 STIR                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b
+      b{1} STSLICECONST     	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b
+      s3 PUSH               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b state.minimum_reserve_floor
+      STGRAMS               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b
+      s4 PUSH               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b state.version
+      16 STUR               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b
+      ENDC                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet '174
+      c4 POP                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet
+      // 236: createMessage(
+      NEWC                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b
+      b{010000} STSLICECONST	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed remainderBeneficiary.wallet b
+      STSTDADDR             	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed b
+      0 PUSHINT
+      111 STUR              	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed b
+      ENDC                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed '250
+      // 240: ).send(SEND_MODE_CARRY_ALL_BALANCE)
+      7 PUSHPOW2            	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed '250 '251=128
+      // 236: createMessage(
+      SENDRAWMSG            	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.version state.minimum_reserve_floor state.completed
+      // 241: return ()
+      s0 s2 XCHG            	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    }>                      	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    // 98: contract.setData(self.toCell())
+    s11 PUSH
+    NEWC                    	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version state.owner b
+    STSTDADDR               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b
+    s11 PUSH                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b state.liveness_interval_seconds
+    32 STUR                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b
+    s10 PUSH                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b state.last_liveness_at
+    64 STUR                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b
+    s9 PUSH                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b state.liveness_code_hash
+    256 STUR                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b
+    s8 PUSH                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b state.beneficiary_count
+    16 STUR                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b
+    s7 s(-1) PUXC           	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version state.beneficiaries b
+    STOPTREF                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b
+    s6 PUSH                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b state.payout_index
+    16 STUR                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b
+    s5 PUSH                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b state.payout_pool_snapshot
+    STGRAMS                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b
+    s4 PUSH                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b state.expired
+    1 STIR                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b
+    s3 PUSH                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b state.completed
+    1 STIR                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b
+    s2 PUSH                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b state.minimum_reserve_floor
+    STGRAMS                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b
+    OVER                    	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b state.version
+    16 STUR                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version b
+    ENDC                    	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version '260
+    c4 POP                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+  }>
+  // contracts/DeadMansSwitchVault.tolk:248
+  onInternalMessage() PROC:<{	//  in.body
+    // 248: fun onInternalMessage(in: InMessage)
+    INMSG_BOUNCED           	//  in.body '1
+    0 THROWIF               	//  in.body
+    // 94: return VaultState.fromCell(contract.getData())
+    c4 PUSH                 	//  in.body '5
+    // 249: var state = lazy VaultState.load()
+    CTOS                    	//  in.body lazyS
+    // 250: state.requirePhaseOneLayout()
+    LDSTDADDR               	//  in.body state.owner lazyS
+    32 LDU                  	//  in.body state.owner state.liveness_interval_seconds lazyS
+    64 LDU                  	//  in.body state.owner state.liveness_interval_seconds state.last_liveness_at lazyS
+    256 LDU                 	//  in.body state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash lazyS
+    16 LDU                  	//  in.body state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count lazyS
+    LDOPTREF                	//  in.body state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries lazyS
+    16 LDU                  	//  in.body state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index lazyS
+    LDGRAMS                 	//  in.body state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot lazyS
+    1 LDI                   	//  in.body state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired lazyS
+    1 LDI                   	//  in.body state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed lazyS
+    LDGRAMS                 	//  in.body state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor lazyS
+    16 PLDU                 	//  in.body state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    s11 s10 s9 PUSH3        	//  in.body state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version state.owner state.liveness_interval_seconds state.last_liveness_at
+    s11 s10 s9 PUSH3        	//  in.body state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries
+    s11 s10 s9 PUSH3        	//  in.body state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired
+    s11 s10 s9 PUSH3        	//  in.body state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    VaultState.requirePhaseOneLayout() CALLDICT	//  in.body state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    // 253: if (in.body.isEmpty())
+    s12 PUSH                	//  in.body state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version in.body
+    SEMPTY                  	//  in.body state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version '41
+    IFJMP:<{                	//  in.body state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+      // 255: if (state.last_liveness_at == 0)
+      s3 POP                	//  in.body state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.version state.completed state.minimum_reserve_floor
+      s11 POP               	//  state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.version state.completed
+      s7 PUSH               	//  state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.version state.completed state.last_liveness_at
+      0 EQINT               	//  state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.version state.completed '43
+      s8 POP                	//  state.minimum_reserve_floor state.owner state.liveness_interval_seconds '43 state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.version state.completed
+      s0 s7 XCHG            	//  state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.completed state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.version '43
+      IF:<{                 	//  state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.completed state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.version
+        // 256: state.touchOwnerPing(blockchain.now())
+        NOW                 	//  state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.completed state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.version state.last_liveness_at
+        // 98: contract.setData(self.toCell())
+        s0 s9 XCHG
+        NEWC                	//  state.minimum_reserve_floor state.last_liveness_at state.liveness_interval_seconds state.completed state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.version state.owner b
+        STSTDADDR           	//  state.minimum_reserve_floor state.last_liveness_at state.liveness_interval_seconds state.completed state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.version b
+        s1 s8 XCHG          	//  state.minimum_reserve_floor state.last_liveness_at state.version state.completed state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.liveness_interval_seconds b
+        32 STU              	//  state.minimum_reserve_floor state.last_liveness_at state.version state.completed state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot b
+        s1 s8 XCHG          	//  state.minimum_reserve_floor state.payout_pool_snapshot state.version state.completed state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.last_liveness_at b
+        64 STU              	//  state.minimum_reserve_floor state.payout_pool_snapshot state.version state.completed state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index b
+        s1 s4 XCHG          	//  state.minimum_reserve_floor state.payout_pool_snapshot state.version state.completed state.payout_index state.beneficiary_count state.beneficiaries state.liveness_code_hash b
+        256 STU             	//  state.minimum_reserve_floor state.payout_pool_snapshot state.version state.completed state.payout_index state.beneficiary_count state.beneficiaries b
+        s1 s2 XCHG          	//  state.minimum_reserve_floor state.payout_pool_snapshot state.version state.completed state.payout_index state.beneficiaries state.beneficiary_count b
+        16 STU              	//  state.minimum_reserve_floor state.payout_pool_snapshot state.version state.completed state.payout_index state.beneficiaries b
+        STOPTREF            	//  state.minimum_reserve_floor state.payout_pool_snapshot state.version state.completed state.payout_index b
+        16 STU              	//  state.minimum_reserve_floor state.payout_pool_snapshot state.version state.completed b
+        s0 s3 XCHG2         	//  state.minimum_reserve_floor state.completed state.version b state.payout_pool_snapshot
+        STGRAMS             	//  state.minimum_reserve_floor state.completed state.version b
+        b{0} STSLICECONST   	//  state.minimum_reserve_floor state.completed state.version b
+        s1 s2 XCHG          	//  state.minimum_reserve_floor state.version state.completed b
+        1 STI               	//  state.minimum_reserve_floor state.version b
+        ROT                 	//  state.version b state.minimum_reserve_floor
+        STGRAMS             	//  state.version b
+        16 STU              	//  b
+        ENDC                	//  '78
+        c4 POP              	// 
+      }>ELSE<{              	//  state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.completed state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.version
+        // 255: if (state.last_liveness_at == 0)
+        10 BLKDROP          	// 
+      }>                    	// 
+    }>                      	//  body state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    // 263: val op = body.loadUint(32)
+    s0 s12 XCHG             	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor body
+    32 LDU                  	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor op body
+    // 265: if (op == OP_COMMENT)
+    OVER                    	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor op body op
+    0 EQINT                 	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor op body '85
+    IFJMP:<{                	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor op body
+      // 266: val providedCommentHash = beginCell()
+      NIP                   	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor body
+      NEWC                  	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor body '86
+      STSLICE               	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor '86
+      HASHBU                	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor providedCommentHash
+      // 271: if (in.senderAddress == state.owner)
+      INMSG_SRC             	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor providedCommentHash '91
+      s12 PUSH              	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor providedCommentHash '91 state.owner
+      SDEQ                  	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor providedCommentHash '93
+      IFJMP:<{              	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor providedCommentHash
+        // 272: assert (!state.completed) throw ERR_COMPLETED
+        s3 POP              	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed state.minimum_reserve_floor
+        OVER                	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed state.minimum_reserve_floor state.completed
+        108 THROWIF         	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed state.minimum_reserve_floor
+        // 273: assert (!state.isExpiredAt(blockchain.now())) throw ERR_ALREADY_EXPIRED
+        NOW                 	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed state.minimum_reserve_floor '97
+        // 140: return self.last_liveness_at + self.liveness_interval_seconds
+        s9 s10 PUSH2        	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed state.minimum_reserve_floor '97 state.last_liveness_at state.liveness_interval_seconds
+        ADD                 	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed state.minimum_reserve_floor '97 '100
+        s10 POP             	//  state.version state.owner state.liveness_interval_seconds '99 state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed state.minimum_reserve_floor '97
+        // 144: return nowTs >= self.nextLivenessDeadline()
+        s0 s9 XCHG2         	//  state.version state.owner state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed '97 '99
+        GEQ                 	//  state.version state.owner state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed '98
+        // 273: assert (!state.isExpiredAt(blockchain.now())) throw ERR_ALREADY_EXPIRED
+        107 THROWIF         	//  state.version state.owner state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed
+        // 274: assert (providedCommentHash == state.liveness_code_hash) throw ERR_INVALID_LIVENESS_CODE
+        s1 s6 XCPU          	//  state.version state.owner state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.completed providedCommentHash state.liveness_code_hash
+        EQUAL               	//  state.version state.owner state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.completed '104
+        106 THROWIFNOT      	//  state.version state.owner state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.completed
+        // 276: state.touchOwnerPing(blockchain.now())
+        NOW                 	//  state.version state.owner state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.completed state.last_liveness_at
+        // 98: contract.setData(self.toCell())
+        s0 s9 XCHG
+        NEWC                	//  state.version state.last_liveness_at state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.completed state.owner b
+        STSTDADDR           	//  state.version state.last_liveness_at state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.completed b
+        s1 s8 XCHG          	//  state.version state.last_liveness_at state.completed state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.liveness_interval_seconds b
+        32 STU              	//  state.version state.last_liveness_at state.completed state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot b
+        s1 s8 XCHG          	//  state.version state.payout_pool_snapshot state.completed state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.last_liveness_at b
+        64 STU              	//  state.version state.payout_pool_snapshot state.completed state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index b
+        s1 s4 XCHG          	//  state.version state.payout_pool_snapshot state.completed state.minimum_reserve_floor state.payout_index state.beneficiary_count state.beneficiaries state.liveness_code_hash b
+        256 STU             	//  state.version state.payout_pool_snapshot state.completed state.minimum_reserve_floor state.payout_index state.beneficiary_count state.beneficiaries b
+        s1 s2 XCHG          	//  state.version state.payout_pool_snapshot state.completed state.minimum_reserve_floor state.payout_index state.beneficiaries state.beneficiary_count b
+        16 STU              	//  state.version state.payout_pool_snapshot state.completed state.minimum_reserve_floor state.payout_index state.beneficiaries b
+        STOPTREF            	//  state.version state.payout_pool_snapshot state.completed state.minimum_reserve_floor state.payout_index b
+        16 STU              	//  state.version state.payout_pool_snapshot state.completed state.minimum_reserve_floor b
+        s0 s3 XCHG2         	//  state.version state.minimum_reserve_floor state.completed b state.payout_pool_snapshot
+        STGRAMS             	//  state.version state.minimum_reserve_floor state.completed b
+        b{0} STSLICECONST   	//  state.version state.minimum_reserve_floor state.completed b
+        1 STI               	//  state.version state.minimum_reserve_floor b
+        SWAP                	//  state.version b state.minimum_reserve_floor
+        STGRAMS             	//  state.version b
+        16 STU              	//  b
+        ENDC                	//  '139
+        c4 POP              	// 
+      }>                    	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor providedCommentHash
+      // 281: assert (!state.completed) throw ERR_COMPLETED
+      s2 PUSH               	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor providedCommentHash state.completed
+      108 THROWIF           	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor providedCommentHash
+      // 282: assert (state.isBeneficiary(in.senderAddress)) throw ERR_NOT_BENEFICIARY
+      INMSG_SRC             	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor providedCommentHash '143
+      s12 PUSH              	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor providedCommentHash '143 state.owner
+      s12 s2 s(-1) PUXC2    	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds providedCommentHash '143
+      s12 PUSH              	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds providedCommentHash '143 state.last_liveness_at
+      s12 s2 s(-1) PUXC2    	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash providedCommentHash '143
+      s12 PUSH              	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash providedCommentHash '143 state.beneficiary_count
+      s12 s2 s(-1) PUXC2    	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries providedCommentHash '143
+      s12 PUSH              	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries providedCommentHash '143 state.payout_index
+      s12 s2 s(-1) PUXC2    	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash '143
+      s12 s11 s(-1) XCPUXC  	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed '143
+      s11 s(-1) PUXC        	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor '143
+      23 s() PUSH           	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor '143 state.version
+      SWAP                  	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version '143
+      VaultState.isBeneficiary() CALLDICT	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed state.minimum_reserve_floor '145
+      109 THROWIFNOT        	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed state.minimum_reserve_floor
+      // 283: assert (state.isExpiredAt(blockchain.now())) throw ERR_EXPIRY_TOO_EARLY
+      NOW                   	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed state.minimum_reserve_floor '147
+      // 140: return self.last_liveness_at + self.liveness_interval_seconds
+      s9 s10 PUSH2          	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed state.minimum_reserve_floor '147 state.last_liveness_at state.liveness_interval_seconds
+      ADD                   	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed state.minimum_reserve_floor '147 '149
+      // 144: return nowTs >= self.nextLivenessDeadline()
+      GEQ                   	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed state.minimum_reserve_floor '148
+      // 283: assert (state.isExpiredAt(blockchain.now())) throw ERR_EXPIRY_TOO_EARLY
+      110 THROWIFNOT        	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot providedCommentHash state.completed state.minimum_reserve_floor
+      // 284: assert (providedCommentHash == COMMENT_TRIGGER_TEXT_HASH) throw ERR_UNKNOWN_OPCODE
+      s0 s2 XCHG
+      59931376171685742234690284232323235352362676214558505920189091871609322200594 PUSHINT	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.minimum_reserve_floor state.completed providedCommentHash '153=59931376171685742234690284232323235352362676214558505920189091871609322200594
+      EQUAL                 	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.minimum_reserve_floor state.completed '154
+      100 THROWIFNOT        	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.minimum_reserve_floor state.completed
+      // 287: payoutRemainingIfPossible(mutate state)
+      s9 s10 XCHG
+      s8 s9 XCHG
+      s7 s8 XCHG
+      s6 s7 XCHG
+      s5 s6 XCHG
+      s4 s5 XCHG
+      s3 s4 XCHG
+      s2 s3 XCHG
+      // 286: state.expired = true
+      TRUE                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.version state.minimum_reserve_floor state.completed state.expired
+      // 287: payoutRemainingIfPossible(mutate state)
+      s2 s3 XCHG2           	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+      payoutRemainingIfPossible() CALLDICT	//  '156 '157 '158 '159 '160 '161 '162 '163 '164 '165 '166 '167
+      12 BLKDROP            	// 
+    }>                      	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor op body
+    // 291: if (op == OP_OWNER_PING)
+    OVER
+    4097 PUSHINT            	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor op body op '168=4097
+    EQUAL                   	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor op body '169
+    IFJMP:<{                	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor op body
+      // 292: assert (in.senderAddress == state.owner) throw ERR_NOT_OWNER
+      NIP                   	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor body
+      s3 POP                	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot body state.completed state.minimum_reserve_floor
+      INMSG_SRC             	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot body state.completed state.minimum_reserve_floor '171
+      s11 PUSH              	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot body state.completed state.minimum_reserve_floor '171 state.owner
+      SDEQ                  	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot body state.completed state.minimum_reserve_floor '173
+      105 THROWIFNOT        	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot body state.completed state.minimum_reserve_floor
+      // 293: assert (!state.completed) throw ERR_COMPLETED
+      OVER                  	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot body state.completed state.minimum_reserve_floor state.completed
+      108 THROWIF           	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot body state.completed state.minimum_reserve_floor
+      // 294: assert (!state.isExpiredAt(blockchain.now())) throw ERR_ALREADY_EXPIRED
+      NOW                   	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot body state.completed state.minimum_reserve_floor '177
+      // 140: return self.last_liveness_at + self.liveness_interval_seconds
+      s9 s10 PUSH2          	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot body state.completed state.minimum_reserve_floor '177 state.last_liveness_at state.liveness_interval_seconds
+      ADD                   	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot body state.completed state.minimum_reserve_floor '177 '180
+      s10 POP               	//  state.version state.owner state.liveness_interval_seconds '179 state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot body state.completed state.minimum_reserve_floor '177
+      // 144: return nowTs >= self.nextLivenessDeadline()
+      s0 s9 XCHG2           	//  state.version state.owner state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot body state.completed '177 '179
+      GEQ                   	//  state.version state.owner state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot body state.completed '178
+      // 294: assert (!state.isExpiredAt(blockchain.now())) throw ERR_ALREADY_EXPIRED
+      107 THROWIF           	//  state.version state.owner state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot body state.completed
+      // 296: val providedCodeHash = beginCell()
+      SWAP
+      NEWC                  	//  state.version state.owner state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.completed body '183
+      STSLICE               	//  state.version state.owner state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.completed '183
+      HASHBU                	//  state.version state.owner state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.completed providedCodeHash
+      // 301: assert (providedCodeHash == state.liveness_code_hash) throw ERR_INVALID_LIVENESS_CODE
+      s6 PUSH               	//  state.version state.owner state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.completed providedCodeHash state.liveness_code_hash
+      EQUAL                 	//  state.version state.owner state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.completed '189
+      106 THROWIFNOT        	//  state.version state.owner state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.completed
+      // 303: state.touchOwnerPing(blockchain.now())
+      NOW                   	//  state.version state.owner state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.completed state.last_liveness_at
+      // 98: contract.setData(self.toCell())
+      s0 s9 XCHG
+      NEWC                  	//  state.version state.last_liveness_at state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.completed state.owner b
+      STSTDADDR             	//  state.version state.last_liveness_at state.liveness_interval_seconds state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.completed b
+      s1 s8 XCHG            	//  state.version state.last_liveness_at state.completed state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.liveness_interval_seconds b
+      32 STU                	//  state.version state.last_liveness_at state.completed state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot b
+      s1 s8 XCHG            	//  state.version state.payout_pool_snapshot state.completed state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.last_liveness_at b
+      64 STU                	//  state.version state.payout_pool_snapshot state.completed state.minimum_reserve_floor state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index b
+      s1 s4 XCHG            	//  state.version state.payout_pool_snapshot state.completed state.minimum_reserve_floor state.payout_index state.beneficiary_count state.beneficiaries state.liveness_code_hash b
+      256 STU               	//  state.version state.payout_pool_snapshot state.completed state.minimum_reserve_floor state.payout_index state.beneficiary_count state.beneficiaries b
+      s1 s2 XCHG            	//  state.version state.payout_pool_snapshot state.completed state.minimum_reserve_floor state.payout_index state.beneficiaries state.beneficiary_count b
+      16 STU                	//  state.version state.payout_pool_snapshot state.completed state.minimum_reserve_floor state.payout_index state.beneficiaries b
+      STOPTREF              	//  state.version state.payout_pool_snapshot state.completed state.minimum_reserve_floor state.payout_index b
+      16 STU                	//  state.version state.payout_pool_snapshot state.completed state.minimum_reserve_floor b
+      s0 s3 XCHG2           	//  state.version state.minimum_reserve_floor state.completed b state.payout_pool_snapshot
+      STGRAMS               	//  state.version state.minimum_reserve_floor state.completed b
+      b{0} STSLICECONST     	//  state.version state.minimum_reserve_floor state.completed b
+      1 STI                 	//  state.version state.minimum_reserve_floor b
+      SWAP                  	//  state.version b state.minimum_reserve_floor
+      STGRAMS               	//  state.version b
+      16 STU                	//  b
+      ENDC                  	//  '224
+      c4 POP                	// 
+    }>                      	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor op body
+    // 308: if (op == OP_TRIGGER_EXPIRY)
+    DROP                    	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor op
+    DUP
+    4098 PUSHINT            	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor op op '225=4098
+    EQUAL                   	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor op '226
+    IFJMP:<{                	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor op
+      // 309: assert (!state.completed) throw ERR_COMPLETED
+      DROP                  	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor
+      OVER                  	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.completed
+      108 THROWIF           	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor
+      // 310: assert (state.isBeneficiary(in.senderAddress)) throw ERR_NOT_BENEFICIARY
+      INMSG_SRC             	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor '230
+      s11 PUSH              	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor '230 state.owner
+      s11 s2 s(-1) PUXC2    	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.owner state.liveness_interval_seconds state.minimum_reserve_floor '230
+      s11 PUSH              	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.owner state.liveness_interval_seconds state.minimum_reserve_floor '230 state.last_liveness_at
+      s11 s2 s(-1) PUXC2    	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.minimum_reserve_floor '230
+      s11 PUSH              	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.minimum_reserve_floor '230 state.beneficiary_count
+      s11 s2 s(-1) PUXC2    	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.minimum_reserve_floor '230
+      s11 PUSH              	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.minimum_reserve_floor '230 state.payout_index
+      s11 s2 s(-1) PUXC2    	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.minimum_reserve_floor '230
+      s11 s10 s(-1) XCPUXC  	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.minimum_reserve_floor state.completed state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed '230
+      s12 s(-1) PUXC        	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.minimum_reserve_floor state.completed state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor '230
+      22 s() PUSH           	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.minimum_reserve_floor state.completed state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor '230 state.version
+      SWAP                  	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.minimum_reserve_floor state.completed state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version '230
+      VaultState.isBeneficiary() CALLDICT	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.minimum_reserve_floor state.completed '232
+      109 THROWIFNOT        	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.minimum_reserve_floor state.completed
+      // 311: assert (state.isExpiredAt(blockchain.now())) throw ERR_EXPIRY_TOO_EARLY
+      NOW                   	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.minimum_reserve_floor state.completed '234
+      // 140: return self.last_liveness_at + self.liveness_interval_seconds
+      s8 s9 PUSH2           	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.minimum_reserve_floor state.completed '234 state.last_liveness_at state.liveness_interval_seconds
+      ADD                   	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.minimum_reserve_floor state.completed '234 '236
+      // 144: return nowTs >= self.nextLivenessDeadline()
+      GEQ                   	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.minimum_reserve_floor state.completed '235
+      // 311: assert (state.isExpiredAt(blockchain.now())) throw ERR_EXPIRY_TOO_EARLY
+      110 THROWIFNOT        	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.minimum_reserve_floor state.completed
+      // 314: payoutRemainingIfPossible(mutate state)
+      s9 s10 XCHG
+      s8 s9 XCHG
+      s7 s8 XCHG
+      s6 s7 XCHG
+      s5 s6 XCHG
+      s4 s5 XCHG
+      s3 s4 XCHG
+      s2 s3 XCHG
+      // 313: state.expired = true
+      TRUE                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.version state.minimum_reserve_floor state.completed state.expired
+      // 314: payoutRemainingIfPossible(mutate state)
+      s2 s3 XCHG2           	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+      payoutRemainingIfPossible() CALLDICT	//  '240 '241 '242 '243 '244 '245 '246 '247 '248 '249 '250 '251
+      12 BLKDROP            	// 
+    }>                      	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor op
+    // 318: if (op == OP_RESUME_PAYOUT)
+    DUP
+    4099 PUSHINT            	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor op op '252=4099
+    EQUAL                   	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor op '253
+    IFJMP:<{                	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor op
+      // 319: assert (state.expired) throw ERR_NOT_EXPIRED
+      DROP                  	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor
+      s2 PUSH               	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.expired
+      111 THROWIFNOT        	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor
+      // 320: assert (!state.completed) throw ERR_COMPLETED
+      OVER                  	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.completed
+      108 THROWIF           	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor
+      // 321: assert (state.isBeneficiary(in.senderAddress)) throw ERR_NOT_BENEFICIARY
+      INMSG_SRC             	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor '258
+      s11 s10 s(-2) PU2XC   	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds '258
+      s11 s10 s(-2) PU2XC   	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash '258
+      s11 s10 s(-2) PU2XC   	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries '258
+      s11 s10 s(-2) PU2XC   	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot '258
+      s11 s10 s(-2) PU2XC   	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed '258
+      s11 s(-1) PUXC        	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor '258
+      23 s() PUSH           	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor '258 state.version
+      SWAP                  	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version '258
+      VaultState.isBeneficiary() CALLDICT	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor '260
+      109 THROWIFNOT        	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor
+      // 322: assert (state.payout_index < state.beneficiary_count) throw ERR_PAYOUT_INDEX_OUT_OF_RANGE
+      s4 s6 PUSH2           	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.payout_index state.beneficiary_count
+      LESS                  	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor '262
+      104 THROWIFNOT        	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor
+      // 324: payoutRemainingIfPossible(mutate state)
+      11 ROLL               	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+      payoutRemainingIfPossible() CALLDICT	//  '263 '264 '265 '266 '267 '268 '269 '270 '271 '272 '273 '274
+      12 BLKDROP            	// 
+    }>                      	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor op
+    // 328: if (op == OP_CANCEL)
+    NIP                     	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed op
+    s3 POP                  	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index op state.expired state.completed
+    s4 POP                  	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.completed state.payout_index op state.expired
+    s4 POP                  	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.expired state.completed state.payout_index op
+    s4 POP                  	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at op state.expired state.completed state.payout_index
+    s7 POP                  	//  state.payout_index state.owner state.liveness_interval_seconds state.last_liveness_at op state.expired state.completed
+    s2 PUSH
+    4102 PUSHINT            	//  state.payout_index state.owner state.liveness_interval_seconds state.last_liveness_at op state.expired state.completed op '275=4102
+    EQUAL                   	//  state.payout_index state.owner state.liveness_interval_seconds state.last_liveness_at op state.expired state.completed '276
+    IFJMP:<{                	//  state.payout_index state.owner state.liveness_interval_seconds state.last_liveness_at op state.expired state.completed
+      // 329: assert (in.senderAddress == state.owner) throw ERR_NOT_OWNER
+      s2 POP                	//  state.payout_index state.owner state.liveness_interval_seconds state.last_liveness_at state.completed state.expired
+      INMSG_SRC             	//  state.payout_index state.owner state.liveness_interval_seconds state.last_liveness_at state.completed state.expired '278
+      s5 PUSH               	//  state.payout_index state.owner state.liveness_interval_seconds state.last_liveness_at state.completed state.expired '278 state.owner
+      SDEQ                  	//  state.payout_index state.owner state.liveness_interval_seconds state.last_liveness_at state.completed state.expired '280
+      105 THROWIFNOT        	//  state.payout_index state.owner state.liveness_interval_seconds state.last_liveness_at state.completed state.expired
+      // 330: assert (!state.completed) throw ERR_COMPLETED
+      SWAP                  	//  state.payout_index state.owner state.liveness_interval_seconds state.last_liveness_at state.expired state.completed
+      108 THROWIF           	//  state.payout_index state.owner state.liveness_interval_seconds state.last_liveness_at state.expired
+      // 331: assert (!state.expired) throw ERR_CANNOT_CANCEL_AFTER_EXPIRY
+      112 THROWIF           	//  state.payout_index state.owner state.liveness_interval_seconds state.last_liveness_at
+      // 332: assert (!state.isExpiredAt(blockchain.now())) throw ERR_CANNOT_CANCEL_AFTER_EXPIRY
+      NOW                   	//  state.payout_index state.owner state.liveness_interval_seconds state.last_liveness_at '286
+      // 140: return self.last_liveness_at + self.liveness_interval_seconds
+      s0 s2 XCHG            	//  state.payout_index state.owner '286 state.last_liveness_at state.liveness_interval_seconds
+      ADD                   	//  state.payout_index state.owner '286 '288
+      // 144: return nowTs >= self.nextLivenessDeadline()
+      GEQ                   	//  state.payout_index state.owner '287
+      // 332: assert (!state.isExpiredAt(blockchain.now())) throw ERR_CANNOT_CANCEL_AFTER_EXPIRY
+      112 THROWIF           	//  state.payout_index state.owner
+      // 333: assert (state.payout_index == 0) throw ERR_PAYOUT_ALREADY_STARTED
+      SWAP                  	//  state.owner state.payout_index
+      113 THROWIF           	//  state.owner
+      // 335: createMessage(
+      NEWC                  	//  state.owner b
+      b{010000} STSLICECONST	//  state.owner b
+      STSTDADDR             	//  b
+      0 PUSHINT
+      111 STUR              	//  b
+      ENDC                  	//  '370
+      // 339: ).send(SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_DESTROY)
+      160 PUSHINT           	//  '370 '373
+      // 335: createMessage(
+      SENDRAWMSG            	// 
+    }>                      	//  state.payout_index state.owner state.liveness_interval_seconds state.last_liveness_at op state.expired state.completed
+    // 343: if (op == OP_GET_STATE)
+    s2 s6 XCHG
+    6 BLKDROP               	//  op
+    4101 PUSHINT            	//  op '374=4101
+    EQUAL                   	//  '375
+    IFJMP:<{                	// 
+    }>                      	// 
+    // 348: throw ERR_UNKNOWN_OPCODE
+    100 THROW
+  }>
+  // contracts/DeadMansSwitchVault.tolk:351
+  get_owner() PROC:<{       	// 
+    // 94: return VaultState.fromCell(contract.getData())
+    c4 PUSH                 	//  '1
+    // 352: val state = lazy VaultState.load()
+    CTOS                    	//  lazyS
+    // 353: state.requirePhaseOneLayout()
+    LDSTDADDR               	//  state.owner lazyS
+    32 LDU                  	//  state.owner state.liveness_interval_seconds lazyS
+    64 LDU                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at lazyS
+    256 LDU                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash lazyS
+    16 LDU                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count lazyS
+    LDOPTREF                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries lazyS
+    16 LDU                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index lazyS
+    LDGRAMS                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot lazyS
+    1 LDI                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired lazyS
+    1 LDI                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed lazyS
+    LDGRAMS                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor lazyS
+    16 PLDU                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    s11 PUSH                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version state.owner
+    11 -ROLL                	//  state.owner state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    VaultState.requirePhaseOneLayout() CALLDICT	//  state.owner
+  }>
+  // contracts/DeadMansSwitchVault.tolk:357
+  get_version() PROC:<{     	// 
+    // 94: return VaultState.fromCell(contract.getData())
+    c4 PUSH                 	//  '1
+    // 358: val state = lazy VaultState.load()
+    CTOS                    	//  lazyS
+    // 359: state.requirePhaseOneLayout()
+    LDSTDADDR               	//  state.owner lazyS
+    32 LDU                  	//  state.owner state.liveness_interval_seconds lazyS
+    64 LDU                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at lazyS
+    256 LDU                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash lazyS
+    16 LDU                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count lazyS
+    LDOPTREF                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries lazyS
+    16 LDU                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index lazyS
+    LDGRAMS                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot lazyS
+    1 LDI                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired lazyS
+    1 LDI                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed lazyS
+    LDGRAMS                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor lazyS
+    16 PLDU                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    11 -ROLL                	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor
+    s11 PUSH                	//  state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    VaultState.requirePhaseOneLayout() CALLDICT	//  state.version
+  }>
+  // contracts/DeadMansSwitchVault.tolk:363
+  get_liveness_status() PROC:<{	// 
+    // 94: return VaultState.fromCell(contract.getData())
+    c4 PUSH                 	//  '1
+    // 364: val state = lazy VaultState.load()
+    CTOS                    	//  lazyS
+    // 365: state.requirePhaseOneLayout()
+    LDSTDADDR               	//  state.owner lazyS
+    32 LDU                  	//  state.owner state.liveness_interval_seconds lazyS
+    64 LDU                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at lazyS
+    256 LDU                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash lazyS
+    16 LDU                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count lazyS
+    LDOPTREF                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries lazyS
+    16 LDU                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index lazyS
+    LDGRAMS                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot lazyS
+    1 LDI                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired lazyS
+    1 LDI                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed lazyS
+    LDGRAMS                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor lazyS
+    16 PLDU                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    s10 PUSH
+    s8 s12 XCHG             	//  state.beneficiary_count state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.owner state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version state.liveness_interval_seconds
+    s7 s10 XCPU             	//  state.beneficiary_count state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.owner state.liveness_interval_seconds state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version state.beneficiaries state.last_liveness_at
+    s0 s7 XCHG              	//  state.beneficiary_count state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.owner state.liveness_interval_seconds state.last_liveness_at state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version state.beneficiaries state.payout_index
+    s6 s10 XCHG             	//  state.beneficiary_count state.liveness_interval_seconds state.last_liveness_at state.payout_pool_snapshot state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.expired state.completed state.minimum_reserve_floor state.version state.beneficiaries state.payout_index
+    s5 s13 XCHG             	//  state.expired state.liveness_interval_seconds state.last_liveness_at state.payout_pool_snapshot state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.completed state.minimum_reserve_floor state.version state.beneficiaries state.payout_index
+    s10 s4 s3 XCHG3         	//  state.expired state.liveness_interval_seconds state.last_liveness_at state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.completed state.minimum_reserve_floor
+    s13 PUSH                	//  state.expired state.liveness_interval_seconds state.last_liveness_at state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.completed state.minimum_reserve_floor state.expired
+    s2 s2 s1 XC2PU          	//  state.expired state.liveness_interval_seconds state.last_liveness_at state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.completed
+    s0 s12 XCHG             	//  state.expired state.liveness_interval_seconds state.last_liveness_at state.completed state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    VaultState.requirePhaseOneLayout() CALLDICT	//  state.expired state.liveness_interval_seconds state.last_liveness_at state.completed
+    // 366: return (
+    s1 s3 XCHG              	//  state.last_liveness_at state.liveness_interval_seconds state.expired state.completed
+  }>
+  // contracts/DeadMansSwitchVault.tolk:374
+  get_payout_progress() PROC:<{	// 
+    // 94: return VaultState.fromCell(contract.getData())
+    c4 PUSH                 	//  '1
+    // 375: val state = lazy VaultState.load()
+    CTOS                    	//  lazyS
+    // 376: state.requirePhaseOneLayout()
+    LDSTDADDR               	//  state.owner lazyS
+    32 LDU                  	//  state.owner state.liveness_interval_seconds lazyS
+    64 LDU                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at lazyS
+    256 LDU                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash lazyS
+    16 LDU                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count lazyS
+    LDOPTREF                	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries lazyS
+    16 LDU                  	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index lazyS
+    LDGRAMS                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot lazyS
+    1 LDI                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired lazyS
+    1 LDI                   	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed lazyS
+    LDGRAMS                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor lazyS
+    16 PLDU                 	//  state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    s7 PUSH
+    s9 s12 XCHG
+    s8 s11 XCHG
+    s7 s10 XCHG
+    s6 s12 XCHG             	//  state.payout_index state.beneficiary_count state.beneficiaries state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version state.beneficiary_count
+    s5 s12 XCPU
+    s5 s11 XCHG             	//  state.payout_index state.beneficiary_count state.expired state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.completed state.minimum_reserve_floor state.version state.payout_pool_snapshot state.payout_index
+    s11 s3 s4 XCHG3         	//  state.payout_index state.beneficiary_count state.version state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.minimum_reserve_floor state.completed
+    s0 s0 s11 XCPUXC        	//  state.payout_index state.beneficiary_count state.minimum_reserve_floor state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    VaultState.requirePhaseOneLayout() CALLDICT	//  state.payout_index state.beneficiary_count state.minimum_reserve_floor
+  }>
+  // contracts/DeadMansSwitchVault.tolk:384
+  get_beneficiary() PROC:<{ 	//  index
+    // 94: return VaultState.fromCell(contract.getData())
+    c4 PUSH                 	//  index '2
+    // 385: val state = lazy VaultState.load()
+    CTOS                    	//  index lazyS
+    // 386: state.requirePhaseOneLayout()
+    LDSTDADDR               	//  index state.owner lazyS
+    32 LDU                  	//  index state.owner state.liveness_interval_seconds lazyS
+    64 LDU                  	//  index state.owner state.liveness_interval_seconds state.last_liveness_at lazyS
+    256 LDU                 	//  index state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash lazyS
+    16 LDU                  	//  index state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count lazyS
+    LDOPTREF                	//  index state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries lazyS
+    16 LDU                  	//  index state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index lazyS
+    LDGRAMS                 	//  index state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot lazyS
+    1 LDI                   	//  index state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired lazyS
+    1 LDI                   	//  index state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed lazyS
+    LDGRAMS                 	//  index state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor lazyS
+    16 PLDU                 	//  index state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    s6 PUSH
+    s11 s12 XCHG
+    s10 s12 XCHG
+    s9 s12 XCHG
+    s8 s12 XCHG
+    s7 s12 XCHG             	//  index state.beneficiaries state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version state.beneficiaries
+    6 -ROLL                 	//  index state.beneficiaries state.owner state.liveness_interval_seconds state.last_liveness_at state.liveness_code_hash state.beneficiary_count state.beneficiaries state.payout_index state.payout_pool_snapshot state.expired state.completed state.minimum_reserve_floor state.version
+    VaultState.requirePhaseOneLayout() CALLDICT	//  index state.beneficiaries
+    // 387: return loadBeneficiaryEntry(state.beneficiaries.mustGet(index))
+    16 PUSHINT              	//  index state.beneficiaries '43=16
+    DICTUGETREF
+    9 THROWIFNOT            	//  '39
+    // 102: return BeneficiaryEntry.fromCell(data)
+    CTOS                    	//  s
+    LDSTDADDR               	//  '51 s
+    16 LDU                  	//  '51 '53 s
+    LDGRAMS                 	//  '51 '53 '54 s
+    LDGRAMS                 	//  '51 '53 '54 '55 s
+    ENDS                    	//  '44 '45 '46 '47
+  }>
+}END>c

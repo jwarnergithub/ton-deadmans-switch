@@ -1,0 +1,25 @@
+{
+  "name": "ton-deadmans-switch",
+  "private": true,
+  "version": "0.1.0",
+  "dependencies": {
+    "@ton/core": "^0.63.1",
+    "@tonconnect/ui-react": "^2.4.4"
+  },
+  "devDependencies": {
+    "@ton/blueprint": "^0.44.1",
+    "tsx": "^4.19.2"
+  },
+  "workspaces": [
+    "app"
+  ],
+  "scripts": {
+    "dev": "npm --prefix app run dev",
+    "build": "npm --prefix app run build",
+    "build:contract": "blueprint build DeadMansSwitchVault && node scripts/syncCompiledArtifact.mjs",
+    "build:contracts": "blueprint build --all && node scripts/syncCompiledArtifact.mjs",
+    "preview": "npm --prefix app run preview",
+    "typecheck": "npm --prefix app run typecheck",
+    "test": "node --import tsx --test tests/**/*.spec.ts"
+  }
+}

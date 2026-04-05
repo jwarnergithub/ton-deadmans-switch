@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="TON Dead Man's Switch">
+  <rect width="128" height="128" rx="28" fill="#112031"/>
+  <path d="M30 36h68l-27 48c-3 5-11 5-14 0L30 36Z" fill="#2d7dd2"/>
+  <path d="M48 36h32L64 65 48 36Z" fill="#f7fbff" opacity=".9"/>
+</svg>
