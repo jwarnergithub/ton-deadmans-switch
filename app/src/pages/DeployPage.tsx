@@ -125,6 +125,12 @@ export function DeployPage({ state }: Props) {
           {wallet.isConnected && (
             <p className="subtitle">Current wallet network: {formatTonNetwork(wallet.chain)}</p>
           )}
+          {wallet.chain === "-239" && (
+            <p className="network-inline-warning">
+              Mainnet warning: this app is still experimental and only lightly tested on live
+              network flows. Use small amounts and deploy carefully.
+            </p>
+          )}
           {deploymentError && <p className="error-text">{deploymentError}</p>}
         </div>
 

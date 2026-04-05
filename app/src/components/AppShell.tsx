@@ -12,6 +12,7 @@ type Props = {
 
 export function AppShell({ state }: Props) {
   const { route, wallet, actions } = state;
+  const showMainnetWarning = wallet.chain === "-239";
 
   return (
     <div className="app-shell">
@@ -53,6 +54,13 @@ export function AppShell({ state }: Props) {
           </button>
         ))}
       </nav>
+
+      {showMainnetWarning ? (
+        <section className="network-warning" aria-label="Mainnet warning">
+          <strong>Mainnet wallet connected.</strong> This app is still experimental and only lightly
+          tested on live network flows. Use small amounts and proceed carefully.
+        </section>
+      ) : null}
 
       <main className="page-shell">
         {route === "landing" && <LandingPage state={state} />}
